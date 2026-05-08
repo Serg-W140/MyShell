@@ -21,14 +21,50 @@ int main() {
         }
         fflush(stdout);
 
-        printf("my_shell> ");
-        fflush(stdout); 
-
         if(!fgets(input, MAX_LINE, stdin)) break;
         input[strcspn(input, "\n")] = '\0';
 
-        if(strcmp(input, "exit") == 0) break;
+        if(strchr(input, '|')) {
+            char *cmd1_str = strtok(input, "|");
+            char *cmd2_str = strtok(NULL, "|");
 
+            int pipefd[2];
+            if(pipe(pipefd) == -1) {perror("pipe"); continue;}
+
+            if(fork() == 0) {
+                dup2(pipefd[1], STDOUT_FILENO);
+                close(pipefd[0]);
+                close(pipefd[1]);
+
+                char *args1[MAX_ARGS];
+                int i = 0;
+                args1[i] = strtok(cmd1_str, " ");
+                while(args1[i] != NULL) args1[++i] = strtok(NULL, " ");
+                execvp(args1[0], args1);
+                exit(1);
+            }
+
+            if(fork() == 0) {
+                dup2(pipefd[0], STDIN_FILENO);
+                close(pipefd[0]);
+                close(pipefd[1]);
+
+                char *args2[MAX_ARGS];
+                int i = 0;
+                args2[i] = strtok(cmd2_str, " ");
+                while(args2[i] != NULL) args2[++i] = strtok(NULL, " ");
+                execvp(args2[0], args2);
+                exit(1);
+            }
+                close(pipefd[0]);
+                close(pipefd[1]);
+                wait(NULL);
+                wait(NULL);
+                continue;
+            
+        }
+
+        if(strcmp(input, "exit") == 0) break;
 
         int i = 0;
         args[i] = strtok(input, " ");
