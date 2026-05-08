@@ -10,8 +10,16 @@
 int main() {
     char input[MAX_LINE];
     char *args[MAX_ARGS];
-
+    char cwd[1024];
+    
     while (1) {
+        if(getcwd(cwd, sizeof(cwd)) != NULL) {
+            printf("my_shell: %s", cwd);
+        } else {
+            printf("my_shell> ");
+        }
+        fflush(stdout);
+
         printf("my_shell> ");
         fflush(stdout); 
 
@@ -28,7 +36,12 @@ int main() {
         }
         args[i] = NULL;
 
-        if(args[0] = NULL) continue;
+        if(args[0] == NULL) continue;
+
+        if(strcmp(args[0], "cd") == 0) {
+            if(args[1] != NULL) chdir(args[1]);
+            continue;
+        }
 
         pid_t pid = fork();
 
