@@ -17,7 +17,7 @@ int main() {
         if(getcwd(cwd, sizeof(cwd)) != NULL) {
             printf("my_shell: %s/", cwd);
         } else {
-            printf("my_shell> ");
+            printf("my_shell > ");
         }
         fflush(stdout);
 
